@@ -1,0 +1,57 @@
+:root {
+  --primary-color: #2563eb;
+  --secondary-color: #475569;
+  --bg-color: #f8fafc;
+  --text-color: #1e293b;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+.staffsync-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+}
+
+.card {
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.hover-bg {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.hover-bg:hover {
+  background-color: #f1f5f9;
+}
+
+@media (max-width: 768px) {
+  aside {
+    min-width: 100% !important;
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .d-flex.flex-grow-1 {
+    flex-direction: column !important;
+  }
+  main {
+    max-width: 100% !important;
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "staffsync-root",
+  "version": "1.0.0",
+  "description": "StaffSync - Modern Human Resource Management Solution (MERN Stack)",
+  "private": true,
+  "scripts": {
+    "server": "npm.cmd start --prefix server",
+    "server:dev": "npm.cmd run dev --prefix server",
+    "seed": "npm.cmd run seed --prefix server",
+    "test": "npm.cmd test --prefix server",
+    "test:server": "npm.cmd test --prefix server",
+    "client": "npm.cmd start --prefix client",
+    "client:build": "npm.cmd run build --prefix client",
+    "install:server": "npm.cmd install --prefix server",
+    "install:client": "npm.cmd install --prefix client",
+    "install:all": "npm.cmd run install:server && npm.cmd run install:client"
+  },
+  "keywords": [
+    "mern",
+    "hrm",
+    "hrms",
+    "staffsync"
+  ],
+  "author": "",
+  "license": "ISC"
+}
