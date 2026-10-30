@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const { Notification } = require('../models');
+const { inMemoryStore } = require('../utils/demoAuthService');
 
 /**
  * @desc    Get current user's notifications
@@ -7,6 +9,19 @@ const { Notification } = require('../models');
  */
 const getMyNotifications = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const userNotifications = (inMemoryStore.notifications || []).filter(
+        (n) => String(n.recipientId) === String(req.user._id)
+      );
+      const unreadCount = userNotifications.filter((n) => !n.isRead).length;
+      return res.status(200).json({
+        success: true,
+        unreadCount,
+        count: userNotifications.length,
+        data: userNotifications,
+      });
+    }
+
     const notifications = await Notification.find({ recipientId: req.user._id })
       .sort({ createdAt: -1 })
       .limit(50);
@@ -34,6 +49,24 @@ const getMyNotifications = async (req, res, next) => {
  */
 const markAsRead = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const notification = (inMemoryStore.notifications || []).find(
+        (n) => String(n._id) === String(req.params.id) && String(n.recipientId) === String(req.user._id)
+      );
+      if (!notification) {
+        return res.status(404).json({
+          success: false,
+          message: 'Notification not found',
+        });
+      }
+      notification.isRead = true;
+      return res.status(200).json({
+        success: true,
+        message: 'Notification marked as read',
+        data: notification,
+      });
+    }
+
     const notification = await Notification.findOne({
       _id: req.params.id,
       recipientId: req.user._id,
@@ -66,6 +99,18 @@ const markAsRead = async (req, res, next) => {
  */
 const markAllAsRead = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      (inMemoryStore.notifications || []).forEach((n) => {
+        if (String(n.recipientId) === String(req.user._id)) {
+          n.isRead = true;
+        }
+      });
+      return res.status(200).json({
+        success: true,
+        message: 'All notifications marked as read',
+      });
+    }
+
     await Notification.updateMany(
       { recipientId: req.user._id, isRead: false },
       { $set: { isRead: true } }

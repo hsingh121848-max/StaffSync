@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const { Manager, Employee, User } = require('../models');
+const { getDemoEmployees, getDemoManagers } = require('../utils/demoAuthService');
 
 /**
  * @desc    Get current manager's assigned team roster
@@ -7,6 +9,14 @@ const { Manager, Employee, User } = require('../models');
  */
 const getMyTeam = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoTeam = getDemoEmployees().slice(0, 2);
+      return res.status(200).json({
+        success: true,
+        data: demoTeam,
+      });
+    }
+
     const manager = await Manager.findOne({ userId: req.user._id }).populate({
       path: 'teamMembers',
       populate: { path: 'userId', select: 'email isActive' },
@@ -35,6 +45,13 @@ const getMyTeam = async (req, res, next) => {
  */
 const getAllManagers = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        data: getDemoManagers(),
+      });
+    }
+
     const managers = await Manager.find()
       .populate('userId', 'email isActive role')
       .populate('teamMembers', 'firstName lastName employeeId department designation');

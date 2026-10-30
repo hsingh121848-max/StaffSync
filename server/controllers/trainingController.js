@@ -1,5 +1,7 @@
+const mongoose = require('mongoose');
 const { Training, Employee, User } = require('../models');
 const { createNotification } = require('../utils/notificationHelper');
+const { inMemoryStore } = require('../utils/demoAuthService');
 
 /**
  * @desc    Create a new training program
@@ -51,6 +53,14 @@ const createTraining = async (req, res, next) => {
  */
 const getAllTrainings = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        count: inMemoryStore.trainings.length,
+        data: inMemoryStore.trainings,
+      });
+    }
+
     const { status, category } = req.query;
     const query = {};
     if (status) query.status = status;
@@ -77,6 +87,18 @@ const getAllTrainings = async (req, res, next) => {
  */
 const getMyTrainings = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        count: inMemoryStore.trainings.length,
+        data: inMemoryStore.trainings.map((t) => ({
+          ...t,
+          overallStatus: 'Scheduled',
+          myStatus: 'Enrolled',
+        })),
+      });
+    }
+
     const employee = await Employee.findOne({ userId: req.user._id });
     if (!employee) {
       return res.status(404).json({

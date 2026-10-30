@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const { Announcement, User } = require('../models');
+const { inMemoryStore } = require('../utils/demoAuthService');
 
 /**
  * @desc    Create and publish a company-wide announcement
@@ -13,6 +15,23 @@ const createAnnouncement = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: 'Announcement title and content are required',
+      });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      const demoAnn = {
+        _id: 'ann_' + Date.now(),
+        title: title.trim(),
+        content: content.trim(),
+        priority: priority || 'Normal',
+        targetAudience: targetAudience || 'All',
+        createdAt: new Date().toISOString(),
+      };
+      inMemoryStore.announcements.unshift(demoAnn);
+      return res.status(201).json({
+        success: true,
+        message: 'Announcement published successfully (Evaluation Demo Session)',
+        data: demoAnn,
       });
     }
 
@@ -42,6 +61,14 @@ const createAnnouncement = async (req, res, next) => {
  */
 const getAnnouncements = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        count: inMemoryStore.announcements.length,
+        data: inMemoryStore.announcements,
+      });
+    }
+
     const query = {};
     // Exclude expired announcements if expiresAt is set
     query.$or = [{ expiresAt: null }, { expiresAt: { $gte: new Date() } }];

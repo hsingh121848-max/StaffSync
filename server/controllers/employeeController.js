@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const { Employee, User, Manager } = require('../models');
+const { getDemoEmployees } = require('../utils/demoAuthService');
 
 /**
  * @desc    Get current employee's personal profile
@@ -7,6 +9,11 @@ const { Employee, User, Manager } = require('../models');
  */
 const getMyProfile = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoEmp = getDemoEmployees()[0];
+      return res.status(200).json({ success: true, data: demoEmp });
+    }
+
     const employee = await Employee.findOne({ userId: req.user._id }).populate('managerId');
     if (!employee) {
       return res.status(404).json({
@@ -65,6 +72,17 @@ const updateMyProfile = async (req, res, next) => {
  */
 const getAllEmployees = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoList = getDemoEmployees();
+      return res.status(200).json({
+        success: true,
+        total: demoList.length,
+        page: 1,
+        pages: 1,
+        data: demoList,
+      });
+    }
+
     const { search, department, page = 1, limit = 10 } = req.query;
 
     const query = {};

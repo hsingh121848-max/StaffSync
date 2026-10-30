@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const { User } = require('../models');
+const { getDemoUserById } = require('../utils/demoAuthService');
 
 /**
  * Protect routes by verifying JWT Bearer token
@@ -37,11 +38,14 @@ const verifyToken = async (req, res, next) => {
     }
 
     if (!user) {
-      // Fallback to token payload data if user record cannot be queried directly
-      req.user = {
-        _id: decoded.id,
-        role: decoded.role,
-      };
+      // Fallback to token payload data / demo user fixture if user record cannot be queried directly
+      const demoUser = getDemoUserById(decoded.id);
+      req.user = demoUser
+        ? { _id: demoUser._id, email: demoUser.email, role: demoUser.role, firstName: demoUser.firstName, lastName: demoUser.lastName }
+        : {
+            _id: decoded.id,
+            role: decoded.role,
+          };
     } else {
       req.user = user;
     }

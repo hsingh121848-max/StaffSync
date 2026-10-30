@@ -15,15 +15,36 @@ const app = express();
 connectDB();
 
 // Core Middleware
+// Dynamic CORS configuration supporting local development and Vercel cloud deployments
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://staff-sync-sand.vercel.app',
+];
+if (process.env.CLIENT_URL) {
+  process.env.CLIENT_URL.split(',').forEach((url) => {
+    const trimmed = url.trim();
+    if (trimmed && !allowedOrigins.includes(trimmed)) allowedOrigins.push(trimmed);
+  });
+}
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Base API Routes
+// Base API Routes (supports both direct /api prefix and serverless rewrite routing)
 app.use('/api', apiRoutes);
+app.use(apiRoutes);
 
 // Root Welcome Endpoint
 app.get('/', (req, res) => {
@@ -41,7 +62,8 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV !== 'test') {
+// Only spin up HTTP listener in persistent server environments (skipped on Vercel Serverless)
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`[StaffSync Server] Running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   });

@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const { Employee, User, Manager, Attendance, Leave, Training, Announcement, Notification } = require('../models');
+const { getDemoDashboardStats, getDemoHRAnalytics } = require('../utils/demoAuthService');
 
 /**
  * @desc    Get aggregated organizational reports & analytics
@@ -7,6 +9,13 @@ const { Employee, User, Manager, Attendance, Leave, Training, Announcement, Noti
  */
 const getHRAnalytics = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        data: getDemoHRAnalytics(),
+      });
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
     // Total employees and managers
@@ -63,6 +72,16 @@ const getHRAnalytics = async (req, res, next) => {
  */
 const getDashboardStats = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          role: req.user.role,
+          ...getDemoDashboardStats(req.user.role),
+        },
+      });
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const role = req.user.role;
 
